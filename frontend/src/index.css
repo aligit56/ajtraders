@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-lightBg dark:bg-darkBg text-lightText dark:text-darkText font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-darkBlue dark:bg-cyan text-white dark:text-black font-semibold py-2 px-4 rounded hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .card {
+    @apply bg-lightCard dark:bg-darkCard border border-lightBorder dark:border-darkBorder rounded-lg shadow-md;
+  }
+  .input-field {
+    @apply w-full bg-lightCard dark:bg-darkCard border border-lightBorder dark:border-darkBorder rounded px-3 py-2 text-lightText dark:text-darkText focus:outline-none focus:border-darkBlue dark:focus:border-cyan focus:shadow-md dark:focus:shadow-none transition-all;
+  }
+}
