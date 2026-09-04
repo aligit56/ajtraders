@@ -8,6 +8,7 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public')); // Serve static images
 
 const db = new sqlite3.Database('./database.sqlite', (err) => {
     if (err) console.error("Database connection error: " + err.message);
@@ -88,14 +89,40 @@ app.get('/api/categories', (req, res) => {
 });
 
 app.post('/api/categories', verifyToken, isAdmin, (req, res) => {
-    const { name, description } = req.body;
-    db.run(`INSERT INTO Categories (name, description) VALUES (?, ?)`, [name, description], function(err) {
+    const { name, description, image_url } = req.body;
+    db.run(`INSERT INTO Categories (name, description, image_url) VALUES (?, ?, ?)`, [name, description, image_url], function(err) {
         if (err) return res.status(400).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, name, description });
+        res.status(201).json({ id: this.lastID, name, description, image_url });
+    });
+});
+
+app.put('/api/categories/:id', verifyToken, isAdmin, (req, res) => {
+    const { name, description, image_url } = req.body;
+    db.run(`UPDATE Categories SET name = COALESCE(?, name), description = COALESCE(?, description), image_url = COALESCE(?, image_url) WHERE id = ?`,
+        [name, description, image_url, req.params.id], function(err) {
+            if (err) return res.status(400).json({ error: err.message });
+            res.json({ message: "Category updated", changes: this.changes });
+        });
+});
+
+app.delete('/api/categories/:id', verifyToken, isAdmin, (req, res) => {
+    db.run(`DELETE FROM Categories WHERE id = ?`, [req.params.id], function(err) {
+        if (err) return res.status(400).json({ error: err.message });
+        res.json({ message: "Category deleted" });
     });
 });
 
 // --- PRODUCTS ENDPOINTS ---
+app.get('/api/products/search', (req, res) => {
+    const query = req.query.q?.toLowerCase() || '';
+    if (!query) return res.status(400).json({ error: 'Query required' });
+    
+    db.all(`SELECT * FROM Products WHERE LOWER(name) LIKE ? AND is_active = 1`, [`%${query}%`], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
 app.get('/api/products', (req, res) => {
     const category_id = req.query.category;
     let query = `SELECT * FROM Products WHERE is_active = 1`;

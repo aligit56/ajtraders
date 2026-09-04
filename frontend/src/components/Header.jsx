@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X, User, Sun, Moon } from 'lucide-react';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
@@ -11,10 +11,30 @@ const Header = () => {
   const { isDarkMode, toggleDarkMode } = useContext(ThemeContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    if (val) {
+      setSearchParams({ q: val });
+      if (window.location.pathname !== '/') navigate(`/?q=${val}`);
+    } else {
+      searchParams.delete('q');
+      setSearchParams(searchParams);
+      if (window.location.pathname !== '/') navigate(`/`);
+    }
+  };
+
+  const clearSearch = () => {
+    searchParams.delete('q');
+    setSearchParams(searchParams);
+    if (window.location.pathname !== '/') navigate(`/`);
   };
 
   return (
@@ -27,8 +47,21 @@ const Header = () => {
         </button>
 
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-darkBlue dark:text-cyan flex-shrink-0 mx-4 md:mx-0">
-          AJ<span className="text-lightBlue dark:text-aqua">Traders</span>
+        <Link to="/" className="text-2xl font-bold text-darkBlue dark:text-cyan flex-shrink-0 mx-4 md:mx-0 flex items-center gap-2 group">
+          <div 
+            className="w-10 h-12 bg-darkBlue dark:bg-cyan transition-colors"
+            style={{ 
+              WebkitMaskImage: 'url(/logo-alpha.png)', 
+              WebkitMaskSize: 'contain', 
+              WebkitMaskRepeat: 'no-repeat', 
+              WebkitMaskPosition: 'center',
+              maskImage: 'url(/logo-alpha.png)',
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'center'
+            }}
+          ></div>
+          <span className="hidden sm:inline">AJ<span className="text-lightBlue dark:text-aqua">Traders</span></span>
         </Link>
 
         {/* Desktop Search */}
@@ -36,9 +69,16 @@ const Header = () => {
           <input 
             type="text" 
             placeholder="Search products..." 
-            className="input-field pl-10 w-full"
+            value={query}
+            onChange={handleSearchChange}
+            className="input-field pl-10 pr-10 w-full"
           />
           <Search className="absolute left-3 top-2.5 text-lightTextSecondary dark:text-darkTextSecondary" size={20} />
+          {query && (
+            <button onClick={clearSearch} className="absolute right-3 top-2.5 text-lightTextSecondary dark:text-darkTextSecondary hover:text-error-light dark:hover:text-error-dark">
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Right Nav */}
@@ -71,16 +111,23 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu & Search */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-lightCard dark:bg-darkCard border-t border-lightBorder dark:border-darkBorder p-4">
           <div className="relative mb-4">
             <input 
               type="text" 
               placeholder="Search products..." 
-              className="input-field pl-10"
+              value={query}
+              onChange={handleSearchChange}
+              className="input-field pl-10 pr-10 w-full"
             />
             <Search className="absolute left-3 top-2.5 text-lightTextSecondary dark:text-darkTextSecondary" size={20} />
+            {query && (
+              <button onClick={clearSearch} className="absolute right-3 top-2.5 text-lightTextSecondary dark:text-darkTextSecondary hover:text-error-light dark:hover:text-error-dark">
+                <X size={20} />
+              </button>
+            )}
           </div>
           <div className="flex flex-col space-y-4">
             {user ? (

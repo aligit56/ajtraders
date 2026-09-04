@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
-import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { Package, ListOrdered, LayoutDashboard } from 'lucide-react';
+import { Package, ListOrdered, LayoutDashboard, FolderTree } from 'lucide-react';
 import Products from './Products';
 import Orders from './Orders';
 import Stats from './Stats';
+import Categories from './Categories';
 
 const AdminDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
     { name: 'Products', path: '/admin/products', icon: <Package size={20} /> },
+    { name: 'Categories', path: '/admin/categories', icon: <FolderTree size={20} /> },
     { name: 'Orders', path: '/admin/orders', icon: <ListOrdered size={20} /> },
   ];
 
@@ -29,15 +31,16 @@ const AdminDashboard = () => {
           {navItems.map(item => {
             const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
             return (
-              <Link 
+              <NavLink 
                 key={item.name} 
                 to={item.path}
+                end={item.path === '/admin'}
                 className={`flex items-center gap-3 px-4 py-3 rounded transition-colors ${
                   isActive ? 'bg-darkBlue dark:bg-cyan/20 text-darkBlue dark:text-cyan' : 'text-lightTextSecondary dark:text-darkTextSecondary hover:bg-lightBorder dark:hover:bg-darkBorder hover:text-lightText dark:text-darkText'
                 }`}
               >
                 {item.icon} {item.name}
-              </Link>
+              </NavLink>
             );
           })}
         </nav>
@@ -48,6 +51,7 @@ const AdminDashboard = () => {
         <Routes>
           <Route path="/" element={<Stats />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/categories" element={<Categories />} />
           <Route path="/orders" element={<Orders />} />
         </Routes>
       </div>
